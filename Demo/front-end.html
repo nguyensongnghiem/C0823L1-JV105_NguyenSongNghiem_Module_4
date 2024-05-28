@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<input id="name" placeholder="enter name">
+<input name="gender" type="radio" value="1">Male
+<input name="gender" type="radio" value="0">Female
+<select id="classId">
+    <option value="1">C08</option>
+    <option value="2">C09</option>
+</select>
+<button id="btn-save">Save</button>
+<table>
+    <thead>
+    <tr>
+        <th>STT</th>
+        <th>Name</th>
+        <th>gender</th>
+        <th>Class</th>
+    </tr>
+    </thead>
+    <tbody id="content">
+    </tbody>
+</table>
+<button id="btn-more">More</button>
+<script>
+    let currentPage = 0;
+    let size = 0;
+
+    $(document).ready(function () {
+        display(currentPage);
+        $("#btn-more").click(function () {
+            currentPage++;
+            display(currentPage);
+        })
+        $("#btn-save").click(function () {
+            let name = $("#name").val();
+            var gender = $('input[name="gender"]:checked').val();
+            let classId = $("#classId").val();
+            let student = {
+                name,
+                gender,
+                classes: {
+                    id: classId
+                }
+
+            }
+            console.log(student)
+            $.ajax({
+                contentType: "application/json",
+                method: "POST",
+                data: JSON.stringify(student),
+                url: `http://localhost:8080/v1/api/students`,
+                complete: function (response) {
+                    if (response.status ==201){
+                        alert("Thêm mới thành công");
+                    }else {
+                        alert("thất bại")
+                    }
+                }
+            })
+        })
+
+    });
+
+    function display(currentPage) {
+        $.ajax({
+            contentType: "application/json",
+            method: "GET",
+            url: `http://localhost:8080/v1/api/students?page=${currentPage}`,
+            success: function (data) {
+                size = data.size;
+                let content = "";
+                let array = data.content;
+                for (let i = 0; i < array.length; i++) {
+                    content += `<tr>
+                                 <td>${currentPage * size + (i + 1)}</td>
+                                 <td>${array[i].name}</td>
+                                 <td>${array[i].gender}</td>
+                                 <td>${array[i].classes.name}</td>
+                             </tr>`
+                }
+                $("#content").append(content);
+
+            }
+        })
+    }
+
+</script>
+</body>
+</html>
